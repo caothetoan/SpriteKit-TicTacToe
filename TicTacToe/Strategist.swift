@@ -22,6 +22,39 @@
 
 import GameplayKit
 
+//
 struct Strategist {
   
+    // The look ahead depth is the constraint you give a strategist to limit the number of future moves it can simulate. You also provide a random source to be the deciding factor when the strategist selects multiple moves as the best move
+    private let strategist: GKMinmaxStrategist = {
+        let strategist = GKMinmaxStrategist()
+        /**
+         * The maximum number of future turns that will be processed when searching for a move.
+         */
+        strategist.maxLookAheadDepth = 5
+        strategist.randomSource = GKARC4RandomSource()
+        
+        return strategist
+    }()
+    
+    // reference to the game model you defined and supply that to the strategist.
+    var board: Board {
+        didSet {
+            strategist.gameModel = board
+        }
+    }
+    // a CGPoint representing the strategist’s best move. The bestMove(for:) method will return nil if the player is in an invalid state or nonexistent.
+    var bestCoordinate: CGPoint? {
+        /**
+        * Selects the best move for the specified player. If randomSource is not nil, it will randomly select
+        * which move to use if there are one or more ties for the best. Returns nil if the player is invalid,
+        * the player is not a part of the game model, or the player has no valid moves available.
+        */
+        if let move = strategist.bestMove(for: board.currentPlayer) as? Move {
+            return move.coordinate
+        }
+        
+        return nil
+    }
+    
 }

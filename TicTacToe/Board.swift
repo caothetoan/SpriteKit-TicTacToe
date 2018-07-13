@@ -29,6 +29,8 @@ class Board: NSObject {
   fileprivate var values: [[Player.Value]] = [
     [.empty, .empty, .empty],
     [.empty, .empty, .empty],
+    [.empty, .empty, .empty],
+    [.empty, .empty, .empty],
     [.empty, .empty, .empty]
   ]
   
@@ -103,7 +105,7 @@ class Board: NSObject {
       }
     }
   }
-  
+  // check can move at empty position of the board
   func canMove(at position: CGPoint) -> Bool {
     if self[Int(position.x), Int(position.y)] == .empty {
       return true
@@ -112,4 +114,95 @@ class Board: NSObject {
     }
   }
   
+}
+
+//
+extension Board: GKGameModel {
+  // stores a list of all the players in the match
+  var players: [GKGameModelPlayer]? {
+    return Player.allPlayers
+  }
+  // keeps track of the player in turn.
+  var activePlayer: GKGameModelPlayer? {
+    return currentPlayer
+  }
+  // lets GameplayKit update your game model with the new state after it makes a decision.
+  func setGameModel(_ gameModel: GKGameModel) {
+    if let board = gameModel as? Board {
+      values = board.values
+    }
+  }
+  
+  // determines whether a player wins the game via winningPlayer. It loops through the board to find whether either player has won and, if so, returns the winning player. You then use this result to compare it to the player that was passed onto this method.
+  func isWin(for player: GKGameModelPlayer) -> Bool {
+    guard let player = player as? Player else {
+      return false
+    }
+    
+    if let winner = winningPlayer {
+      return player == winner
+    }
+    else {
+      return false
+    }
+  }
+  // tells GameplayKit about all the possible moves in the current state of the game.
+  func gameModelUpdates(for player: GKGameModelPlayer) -> [GKGameModelUpdate]? {
+    // 1
+    guard let player = player as? Player else {
+      return nil
+    }
+    
+    if isWin(for: player) {
+      return nil
+    }
+    
+    var moves = [Move]()
+    
+    // 2 loop over all of the board’s positions and add a position to the possible moves array if it is not already occupied.
+    for x in 0..<values.count {
+      for y in 0..<values[x].count {
+        let position = CGPoint(x: x, y: y)
+        if canMove(at: position) {
+          moves.append(Move(position))
+        }
+      }
+    }
+    
+    return moves
+    
+  }
+  
+  // GameplayKit calls apply(_:) after each move selected by the strategist so you have the chance to update the game state. After a player makes a move, it is now the opponent’s turn.
+  func apply(_ gameModelUpdate: GKGameModelUpdate) {
+    guard let move = gameModelUpdate as? Move else {
+      return
+    }
+    
+    // 3
+    self[Int(move.coordinate.x), Int(move.coordinate.y)] = currentPlayer.value
+    
+    //
+    currentPlayer = currentPlayer.opponent
+    
+  }
+  // NSCopying because the strategist evaluates moves against copies of the game.
+  func copy(with zone: NSZone? = nil) -> Any {
+    let copyBoard = Board()
+    copyBoard.setGameModel(self)
+    return copyBoard
+  }
+  
+  // The AI uses score(for:) to calculate it’s best move. When GameplayKit creates its move tree, it will select the shortest path to a winning outcome.
+  func score(for player: GKGameModelPlayer) -> Int {
+    guard let player = player as? Player else {
+      return Move.Score.none.rawValue
+    }
+    
+    if isWin(for: player) {
+      return Move.Score.win.rawValue
+    } else {
+      return Move.Score.none.rawValue
+    }
+  }
 }

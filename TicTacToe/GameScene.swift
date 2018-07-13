@@ -32,7 +32,7 @@ class GameScene: SKScene {
   var gamePieceNodes = [SKNode]()
   
   var board = Board()
-  
+  var strategist: Strategist!
   // MARK: - Scene Loading
   
   override func didMove(to view: SKView) {
@@ -68,8 +68,19 @@ class GameScene: SKScene {
     informationLabel.verticalAlignmentMode = .center
     addChild(informationLabel)
     
+    //
+    strategist = Strategist(board: board)
+    
     resetGame()
+    
+    // every time you reset the game you also provide the strategist with a fresh game model.
+    strategist.board = board
+    
     updateGame()
+    
+    if board.currentPlayer.value == .brain {
+      processAIMove()
+    }
   }
   
   // MARK: - Game Logic
@@ -115,6 +126,7 @@ class GameScene: SKScene {
     informationLabel.text = "\(board.currentPlayer.name)'s Turn"
   }
   
+  //
   fileprivate func updateBoard(with x: Int, y: Int) {
     guard board[x, y] == .empty else { return }
     
@@ -148,6 +160,7 @@ class GameScene: SKScene {
     updateGame()
   }
   
+  //
   fileprivate func position(for boardCoordinate: CGPoint) -> CGPoint {
     let boardWidth = boardNode.size.width
     let halfThirdOfBoard = (boardWidth / 3) / 2
@@ -202,6 +215,10 @@ class GameScene: SKScene {
   }
     
   fileprivate func handleTouchEnd(_ touches: Set<UITouch>, with event: UIEvent?) {
+    guard board.currentPlayer.value == .zombie else {
+      return
+    }
+    
     for touch in touches {
       for node in nodes(at: touch.location(in: self)) {
         if node == boardNode {
@@ -221,6 +238,31 @@ class GameScene: SKScene {
     super.touchesCancelled(touches, with: event)
     
     handleTouchEnd(touches, with: event)
+  }
+  
+  //
+  fileprivate func processAIMove() {
+    //
+    // Create a dispatch queue to process the AI’s move since it could take a while.
+    DispatchQueue.global().async { [unowned self] in
+      
+      // Record the starting time before the strategist decides on the best move.
+      let strategistTime = CFAbsoluteTimeGetCurrent()
+      guard let bestCoordinate = self.strategist.bestCoordinate else {
+        return
+      }
+      // Calculate the time it took for the strategist to make its decision.
+      let delta = CFAbsoluteTimeGetCurrent() - strategistTime
+      
+      let aiTimeCeiling = 0.75
+      // Create a delay based on a constant so the AI will appear to take a bit of time to make a decision. On modern hardware, the AI might return a decision almost immediately so the delay gives the AI a human-like pause.
+      let delay = max(delta, aiTimeCeiling)
+      
+      // update the board on the main queue to reflect the new move.
+      DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+        self.updateBoard(with: Int(bestCoordinate.x), y: Int(bestCoordinate.y))
+      }
+    }
   }
   
 }

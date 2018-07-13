@@ -22,6 +22,23 @@
 
 import GameplayKit
 
-class Move {
-  
+// keep track of the position of the player.
+class Move: NSObject, GKGameModelUpdate {
+    
+    // assign the move a score based on its calculation
+    var value: Int = 0
+    
+    // two dimension coordinate contains the location on the board.
+    var coordinate: CGPoint
+    
+    // define the score of a move based on whether it results in a win.
+    enum Score: Int {
+        case none
+        case win
+    }
+    
+    init(_ coordinate: CGPoint) {
+        self.coordinate = coordinate
+    }
+    
 }
