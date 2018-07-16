@@ -68,24 +68,25 @@ class GameScene: SKScene {
     informationLabel.verticalAlignmentMode = .center
     addChild(informationLabel)
     
-    //
-    strategist = Strategist(board: board)
     
     resetGame()
-    
-    // every time you reset the game you also provide the strategist with a fresh game model.
-    strategist.board = board
-    
+   
     updateGame()
-    
-    if board.currentPlayer.value == .brain {
+    /*
+    NSLog("didMove")
+    NSLog(String(board.currentPlayer.value.name))
+    if board.currentPlayer.value == .zombie {
       processAIMove()
     }
+ */
   }
   
   // MARK: - Game Logic
   
   fileprivate func resetGame() {
+    //
+    strategist = Strategist(board: board)
+    
     let actions = [
       SKAction.scale(to: 0, duration: 0.25),
       SKAction.customAction(withDuration: 0.5, actionBlock: { node, duration in
@@ -98,6 +99,11 @@ class GameScene: SKScene {
     gamePieceNodes.removeAll()
     
     board = Board()
+    
+    
+    // every time you reset the game you also provide the strategist with a fresh game model.
+    strategist.board = board
+    
   }
   
   fileprivate func updateGame() {
@@ -124,6 +130,11 @@ class GameScene: SKScene {
     
     board.currentPlayer = board.currentPlayer.opponent
     informationLabel.text = "\(board.currentPlayer.name)'s Turn"
+    
+    //
+    if board.currentPlayer.value == .zombie {
+      processAIMove()
+    }
   }
   
   //
@@ -215,10 +226,14 @@ class GameScene: SKScene {
   }
     
   fileprivate func handleTouchEnd(_ touches: Set<UITouch>, with event: UIEvent?) {
+    NSLog("handleTouchEnd")
+    NSLog(String(board.currentPlayer.value.name))
+    
+    /*
     guard board.currentPlayer.value == .zombie else {
       return
     }
-    
+    */
     for touch in touches {
       for node in nodes(at: touch.location(in: self)) {
         if node == boardNode {
@@ -243,26 +258,32 @@ class GameScene: SKScene {
   //
   fileprivate func processAIMove() {
     //
+    NSLog("processAIMove")
     // Create a dispatch queue to process the AI’s move since it could take a while.
-    DispatchQueue.global().async { [unowned self] in
+    // DispatchQueue.global().async { [unowned self] in
       
       // Record the starting time before the strategist decides on the best move.
-      let strategistTime = CFAbsoluteTimeGetCurrent()
+      // let strategistTime = CFAbsoluteTimeGetCurrent()
       guard let bestCoordinate = self.strategist.bestCoordinate else {
+        NSLog("not bestCoordinate")
         return
       }
       // Calculate the time it took for the strategist to make its decision.
-      let delta = CFAbsoluteTimeGetCurrent() - strategistTime
+      // let delta = CFAbsoluteTimeGetCurrent() - strategistTime
       
-      let aiTimeCeiling = 0.75
+      // let aiTimeCeiling = 0.75
       // Create a delay based on a constant so the AI will appear to take a bit of time to make a decision. On modern hardware, the AI might return a decision almost immediately so the delay gives the AI a human-like pause.
-      let delay = max(delta, aiTimeCeiling)
+      // let delay = max(delta, aiTimeCeiling)
       
       // update the board on the main queue to reflect the new move.
-      DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+      // DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+      NSLog("bestCoordinate.x=" + String(Int(bestCoordinate.x))
+        + " bestCoordinate.y=" + String(Int(bestCoordinate.y))
+        )
+        
         self.updateBoard(with: Int(bestCoordinate.x), y: Int(bestCoordinate.y))
-      }
-    }
+      // }
+    // }
   }
   
 }

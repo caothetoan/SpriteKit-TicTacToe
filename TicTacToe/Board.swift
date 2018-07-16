@@ -25,10 +25,9 @@ import GameplayKit
 class Board: NSObject {
   
   var currentPlayer = Player.allPlayers[arc4random() % 2 == 0 ? 0 : 1]
+  var scoreCounter = 0;
   
   fileprivate var values: [[Player.Value]] = [
-    [.empty, .empty, .empty],
-    [.empty, .empty, .empty],
     [.empty, .empty, .empty],
     [.empty, .empty, .empty],
     [.empty, .empty, .empty]
@@ -152,6 +151,7 @@ extension Board: GKGameModel {
     guard let player = player as? Player else {
       return nil
     }
+    NSLog ("gameModelUpdates")
     
     if isWin(for: player) {
       return nil
@@ -165,6 +165,7 @@ extension Board: GKGameModel {
         let position = CGPoint(x: x, y: y)
         if canMove(at: position) {
           moves.append(Move(position))
+          NSLog ("    Move x= \(x), y=\(y)")
         }
       }
     }
@@ -198,6 +199,11 @@ extension Board: GKGameModel {
     guard let player = player as? Player else {
       return Move.Score.none.rawValue
     }
+    NSLog ("score")
+    NSLog ("    scoreCounter = \(scoreCounter)")
+    NSLog ("    \(values[0][0]) \(values[0][1]) \(values[0][2]) ")
+    NSLog ("    \(values[1][0]) \(values[1][1]) \(values[1][2]) ")
+    NSLog ("    \(values[2][0]) \(values[2][1]) \(values[2][2]) ")
     
     if isWin(for: player) {
       return Move.Score.win.rawValue

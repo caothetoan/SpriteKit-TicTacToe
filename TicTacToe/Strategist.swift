@@ -31,8 +31,8 @@ struct Strategist {
         /**
          * The maximum number of future turns that will be processed when searching for a move.
          */
-        strategist.maxLookAheadDepth = 5
-        strategist.randomSource = GKARC4RandomSource()
+        strategist.maxLookAheadDepth = 5 // 2    //5
+        strategist.randomSource = GKARC4RandomSource()  // nil    //GKARC4RandomSource()
         
         return strategist
     }()
