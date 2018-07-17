@@ -32,7 +32,7 @@ struct Strategist {
          * The maximum number of future turns that will be processed when searching for a move.
          */
         strategist.maxLookAheadDepth = 5 // 2    //5
-        strategist.randomSource = GKARC4RandomSource()  // nil    //GKARC4RandomSource()
+        //strategist.randomSource = GKARC4RandomSource()  // nil    //GKARC4RandomSource()
         
         return strategist
     }()
@@ -43,18 +43,18 @@ struct Strategist {
             strategist.gameModel = board
         }
     }
-    // a CGPoint representing the strategist’s best move. The bestMove(for:) method will return nil if the player is in an invalid state or nonexistent.
-    var bestCoordinate: CGPoint? {
+   
+    // bestMove
+    var bestMove: Move? {
         /**
-        * Selects the best move for the specified player. If randomSource is not nil, it will randomly select
-        * which move to use if there are one or more ties for the best. Returns nil if the player is invalid,
-        * the player is not a part of the game model, or the player has no valid moves available.
-        */
+         * Selects the best move for the specified player. If randomSource is not nil, it will randomly select
+         * which move to use if there are one or more ties for the best. Returns nil if the player is invalid,
+         * the player is not a part of the game model, or the player has no valid moves available.
+         */
         if let move = strategist.bestMove(for: board.currentPlayer) as? Move {
-            return move.coordinate
+            return move
         }
         
         return nil
     }
-    
 }
